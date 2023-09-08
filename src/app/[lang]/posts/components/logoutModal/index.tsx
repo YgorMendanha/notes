@@ -1,14 +1,16 @@
+import { getDictionary } from "@/dictionary";
 import { useLocalStorage } from "@/hooks/useLocalStorege";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { ImSpinner10 } from "react-icons/im";
 
 export function LogoutModal() {
-  const params = useParams();
+  const { lang }: any = useParams();
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState<boolean>(false);
   const [userName, setUserName] = useState<string | undefined>();
+  const dict = getDictionary(lang);
   const [userStorage] = useLocalStorage(
     "Y.M.Notes-User",
     {} as { id: number; user: string }
@@ -33,7 +35,7 @@ export function LogoutModal() {
 
   const logout = () => {
     localStorage.removeItem("Y.M.Notes-User");
-    return params.lang === "pt" ? router.push("/") : router.push("/en");
+    return lang === "pt" ? router.push("/") : router.push("/en");
   };
 
   return (
@@ -42,7 +44,7 @@ export function LogoutModal() {
         {userName ? (
           <>
             <p>
-              autor: <b className="text-xl">{userStorage.user}</b>
+              {dict.author}: <b className="text-xl">{userStorage.user}</b>
             </p>
 
             <select
@@ -55,7 +57,7 @@ export function LogoutModal() {
                 }
                 return router.push(`/en/${pathname}`);
               }}
-              value={params.lang === "en" ? "en-US" : "pt-BR"}
+              value={lang === "en" ? "en-US" : "pt-BR"}
               className="text-xs border-2 text-end appearance-none rounded outline-10 outline-indigo-500 cursor-pointer p-1 mx-5"
             >
               <option value="pt-BR">pt-BR</option>

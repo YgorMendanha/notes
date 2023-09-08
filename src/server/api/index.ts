@@ -3,8 +3,12 @@ export async function featchApi<T = Response>(
   init?: RequestInit | undefined
 ) {
   var url = "http://localhost:3000";
-  if (process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_SITE_URL)
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.NEXT_PUBLIC_SITE_URL
+  ) {
     url = process.env.NEXT_PUBLIC_SITE_URL;
+  }
 
   const data = await fetch(`${url}${input}`, {
     ...init,

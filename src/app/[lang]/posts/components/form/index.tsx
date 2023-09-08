@@ -1,10 +1,11 @@
 import { useLocalStorage } from "@/hooks/useLocalStorege";
 import { Post } from "@/server/post";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useRef, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { ImSpinner10 } from "react-icons/im";
 import { LogoutModal } from "../logoutModal";
+import { getDictionary } from "@/dictionary";
 
 export function FormCreatePost({
   getPosts,
@@ -12,10 +13,11 @@ export function FormCreatePost({
   getPosts: () => Promise<void>;
 }) {
   const router = useRouter();
+  const { lang }: any = useParams();
   const formRef = useRef<HTMLFormElement>(null);
   const title = useRef<HTMLInputElement>(null);
   const content = useRef<HTMLTextAreaElement>(null);
-
+  const dict = getDictionary(lang);
   const [loading, setLoading] = useState<boolean>(false);
 
   const [userStorage] = useLocalStorage(
@@ -25,9 +27,9 @@ export function FormCreatePost({
 
   useEffect(() => {
     if (!userStorage.id) {
-      return router.push("/");
+      return lang === "pt" ? router.push("/posts") : router.push("/en/posts");
     }
-  }, [userStorage, router]);
+  }, [userStorage, router, lang]);
 
   const createPost = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -52,11 +54,11 @@ export function FormCreatePost({
         className="flex flex-col w-[80vw] max-w-[500px] bg-indigo-950 p-10 rounded-lg mt-[25vh]"
       >
         <label>
-          <p>Titulo do post</p>
+          <p>{dict.postTitle}</p>
           <input
             ref={title}
             className="p-2 w-full rounded-lg bg-indigo-900"
-            placeholder="titulo"
+            placeholder={dict.title}
           />
         </label>
         <label className="my-6">
@@ -64,7 +66,6 @@ export function FormCreatePost({
           <textarea
             ref={content}
             className="p-2 w-full rounded-lg bg-indigo-900"
-            placeholder="texto..."
           />
         </label>
 
@@ -72,7 +73,7 @@ export function FormCreatePost({
           {loading ? (
             <ImSpinner10 className="animate-spin text-2xl mx-auto" />
           ) : (
-            "salvar"
+            dict.toSave
           )}
         </button>
       </form>

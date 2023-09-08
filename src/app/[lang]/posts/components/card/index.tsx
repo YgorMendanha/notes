@@ -1,11 +1,15 @@
 import { useLocalStorage } from "@/hooks/useLocalStorege";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Post } from "@/server/post";
 import moment from "moment";
 import { BsFillTrash3Fill } from "react-icons/bs";
 
 import "moment/locale/pt-br";
+
 import { ImSpinner10 } from "react-icons/im";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import { getDictionary } from "@/dictionary";
+
 export function CardPost({
   post,
   getPosts,
@@ -21,11 +25,15 @@ export function CardPost({
   getPosts: () => Promise<void>;
 }) {
   const [loading, setLoading] = useState<boolean>(false);
-
+  const { lang }: any = useParams();
+  const dict = getDictionary(lang);
   const [userStorage] = useLocalStorage(
     "Y.M.Notes-User",
     {} as { id: number; user: string }
   );
+  useEffect(() => {
+    lang === "en" ? moment.locale("en") : moment.locale("pt");
+  }, [lang]);
 
   async function deletePost() {
     setLoading(true);
@@ -51,7 +59,9 @@ export function CardPost({
           </>
         )}
       </h1>
-      <small>autor: {post.author.user}</small>
+      <small>
+        {dict.author}: {post.author.user}
+      </small>
       <small className="mb-5 ">{moment(post.createdAt).fromNow()}</small>
 
       <p>{post.content}</p>

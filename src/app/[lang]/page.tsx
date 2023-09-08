@@ -1,5 +1,6 @@
 "use client";
 
+import { getDictionary } from "@/dictionary";
 import { useLocalStorage } from "@/hooks/useLocalStorege";
 import { User } from "@/server/user";
 import { useRouter } from "next/navigation";
@@ -7,7 +8,13 @@ import { useRef, useEffect, useState } from "react";
 import { ImSpinner10 } from "react-icons/im";
 import { toast } from "react-toastify";
 
-export default function Home() {
+export default function Home({
+  params: { lang },
+}: {
+  params: { lang: "pt" | "en" };
+}) {
+  const dict = getDictionary(lang);
+
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
@@ -17,19 +24,25 @@ export default function Home() {
   );
 
   useEffect(() => {
-    userStorage.id && router.push("/posts");
-  }, [userStorage, router]);
+    if (userStorage.id) {
+      lang === "pt" ? router.push("/posts") : router.push("/en/posts");
+    }
+  }, [userStorage, router, lang]);
 
   const createUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!input.current) return;
     setLoading(true);
     if (input.current.value.length > 0) {
-      const user = await User.Create({
-        user: input.current.value,
-      });
-      if (user.data.id) {
-        setUserStorage(user.data);
+      try {
+        const user = await User.Create({
+          user: input.current.value,
+        });
+        if (user.data.id) {
+          setUserStorage(user.data);
+        }
+      } catch (error) {
+        console.log(error);
       }
     } else {
       toast.info("Insira um usuario");
@@ -44,11 +57,12 @@ export default function Home() {
         className="flex flex-col bg-indigo-950 p-7 rounded-lg max-w-[80vw]"
       >
         <label>
-          <p>Nome de usuario</p>
+          <p></p>
+          <p>{dict.Username}</p>
           <input
             ref={input}
             className="p-2 w-full rounded-lg bg-indigo-900"
-            placeholder="user"
+            placeholder={dict.User}
           />
         </label>
 
@@ -56,7 +70,7 @@ export default function Home() {
           {loading ? (
             <ImSpinner10 className="animate-spin text-2xl mx-auto" />
           ) : (
-            "entrar"
+            dict.toEnter
           )}
         </button>
       </form>

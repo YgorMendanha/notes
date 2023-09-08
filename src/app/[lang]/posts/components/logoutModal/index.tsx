@@ -1,10 +1,12 @@
 import { useLocalStorage } from "@/hooks/useLocalStorege";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { ImSpinner10 } from "react-icons/im";
 
 export function LogoutModal() {
+  const params = useParams();
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState<boolean>(false);
   const [userName, setUserName] = useState<string | undefined>();
   const [userStorage] = useLocalStorage(
@@ -31,7 +33,7 @@ export function LogoutModal() {
 
   const logout = () => {
     localStorage.removeItem("Y.M.Notes-User");
-    router.push("/");
+    return params.lang === "pt" ? router.push("/") : router.push("/en");
   };
 
   return (
@@ -39,9 +41,27 @@ export function LogoutModal() {
       <div className="flex ml-auto absolute top-5 right-10 items-center">
         {userName ? (
           <>
-            <p className="mr-3 ">
+            <p>
               autor: <b className="text-xl">{userStorage.user}</b>
             </p>
+
+            <select
+              onChange={(e) => {
+                if (e.target.value === "pt-BR") {
+                  if (pathname.split("/")[1] === "en") {
+                    const newUrl = pathname.split("/").slice(2).join("/");
+                    return router.push(`/${newUrl}`);
+                  }
+                }
+                return router.push(`/en/${pathname}`);
+              }}
+              value={params.lang === "en" ? "en-US" : "pt-BR"}
+              className="text-xs border-2 text-end appearance-none rounded outline-10 outline-indigo-500 cursor-pointer p-1 mx-5"
+            >
+              <option value="pt-BR">pt-BR</option>
+              <option value="en-US">en-US</option>
+            </select>
+
             <button
               className="py-2 px-5 rounded-lg bg-indigo-700"
               onClick={() => setOpen(true)}

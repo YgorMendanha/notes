@@ -1,116 +1,57 @@
 import prisma from "@/lib/pisma";
-import { featchApi } from "@/server/api";
-import { headers } from "next/headers";
+import { NextResponse } from "next/server";
 
-export async function POST(request: Request) {
-  const headersList = headers();
-  const athentication = headersList.get("Authentication");
+function auth(req: Request) {
+  const auth = req.headers.get("Authentication") ?? "";
+  const token = Buffer.from(auth.split(" ")[1] ?? "", "base64").toString(
+    "utf8"
+  );
+  return token === process.env.NEXT_PUBLIC_TOKEN;
+}
 
-  if (
-    !athentication ||
-    Buffer.from(athentication?.split(" ")[1]!, "base64").toString("utf8") !==
-      process.env.NEXT_PUBLIC_TOKEN
-  ) {
-    return new Response("unauthorized", {
-      status: 401,
-    });
-  }
+export async function POST(req: Request) {
+  if (!auth(req))
+    return NextResponse.json({ message: "unauthorized" }, { status: 401 });
 
-  const payload: {
-    title: string;
-    content: string;
-    authorId: number;
-  } = await request.json();
-
-  const { authorId, content, title } = payload;
-
-  if (
-    !title ||
-    !content ||
-    !authorId ||
-    title.length === 0 ||
-    content.length === 0
-  ) {
-    return new Response("Invalid Payload", {
-      status: 400,
-    });
-  }
+  const { title, content, authorId } = (await req.json()) as {
+    title?: string;
+    content?: string;
+    authorId?: number;
+  };
+  if (!title || !content || !authorId)
+    return NextResponse.json({ message: "Invalid Payload" }, { status: 400 });
 
   try {
-    const data = await prisma.post.create({ data: payload });
-    const response = {
-      data,
-      code: "201",
-    };
-    return new Response(JSON.stringify(response), {
-      status: 201,
+    const data = await prisma.post.create({
+      data: { title, content, authorId },
     });
+    return NextResponse.json({ data, code: "201" }, { status: 201 });
   } catch (error: any) {
-    if (error?.code === "P2002") {
-      const response = { code: "P2002", message: error.meta.target };
-      return new Response(JSON.stringify(response), {
-        status: 400,
-      });
-    }
+    if (error?.code === "P2002")
+      return NextResponse.json(
+        { code: "P2002", message: error.meta?.target },
+        { status: 400 }
+      );
+    throw error;
   }
 }
 
-export async function GET() {
-  const headersList = headers();
-  const athentication = headersList.get("Authentication");
-
-  if (
-    !athentication ||
-    Buffer.from(athentication?.split(" ")[1]!, "base64").toString("utf8") !==
-      process.env.NEXT_PUBLIC_TOKEN
-  ) {
-    return new Response("unauthorized", {
-      status: 401,
-    });
-  }
+export async function GET(req: Request) {
+  if (!auth(req))
+    return NextResponse.json({ message: "unauthorized" }, { status: 401 });
 
   const data = await prisma.post.findMany({
-    include: {
-      author: true,
-    },
-    orderBy: {
-      id: "desc",
-    },
+    include: { author: true },
+    orderBy: { id: "desc" },
   });
-
-  const response = {
-    data,
-    code: "200",
-  };
-  return new Response(JSON.stringify(response), {
-    status: 200,
-  });
+  return NextResponse.json({ data, code: "200" });
 }
 
-export async function DELETE(request: Request) {
-  const headersList = headers();
-  const athentication = headersList.get("Authentication");
+export async function DELETE(req: Request) {
+  if (!auth(req))
+    return NextResponse.json({ message: "unauthorized" }, { status: 401 });
 
-  if (
-    !athentication ||
-    Buffer.from(athentication?.split(" ")[1]!, "base64").toString("utf8") !==
-      process.env.NEXT_PUBLIC_TOKEN
-  ) {
-    return new Response("unauthorized", {
-      status: 401,
-    });
-  }
-
-  const { searchParams } = new URL(request.url);
-  const id = Number(searchParams.get("id")) || undefined;
-
+  const id = Number(new URL(req.url).searchParams.get("id"));
   const data = await prisma.post.delete({ where: { id } });
-
-  const response = {
-    data,
-    code: "200",
-  };
-  return new Response(JSON.stringify(response), {
-    status: 200,
-  });
+  return NextResponse.json({ data, code: "200" });
 }

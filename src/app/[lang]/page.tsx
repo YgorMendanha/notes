@@ -3,16 +3,13 @@
 import { getDictionary } from "@/dictionary";
 import { useLocalStorage } from "@/hooks/useLocalStorege";
 import { User } from "@/server/user";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useRef, useEffect, useState } from "react";
 import { ImSpinner10 } from "react-icons/im";
 import { toast } from "react-toastify";
 
-export default function Home({
-  params: { lang },
-}: {
-  params: { lang: "pt" | "en" };
-}) {
+export default function Home() {
+  const { lang } = useParams<{ lang: "pt" | "en" }>();
   const dict = getDictionary(lang);
 
   const [loading, setLoading] = useState<boolean>(false);

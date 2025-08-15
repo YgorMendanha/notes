@@ -1,49 +1,34 @@
 import prisma from "@/lib/pisma";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
+function checkAuth(request: Request) {
+  const auth = request.headers.get("Authentication") ?? "";
+  const token = Buffer.from(auth.split(" ")[1] ?? "", "base64").toString(
+    "utf8"
+  );
+  return token === process.env.NEXT_PUBLIC_TOKEN;
+}
+
 export async function POST(request: Request) {
-  const headersList = headers();
-  const athentication = headersList.get("Authentication");
+  if (!checkAuth(request))
+    return NextResponse.json({ message: "unauthorized" }, { status: 401 });
 
-  if (
-    !athentication ||
-    Buffer.from(athentication?.split(" ")[1]!, "base64").toString("utf8") !==
-      process.env.NEXT_PUBLIC_TOKEN
-  ) {
-    return new Response("unauthorized", {
-      status: 401,
-    });
-  }
-
-  const payload: {
-    user: string;
-  } = await request.json();
-
-  const { user } = payload;
-
-  if (!user || user.length === 0) {
-    return new Response("Invalid Payload", {
-      status: 400,
-    });
-  }
+  const { user } = (await request.json()) as { user?: string };
+  if (!user)
+    return NextResponse.json({ message: "Invalid Payload" }, { status: 400 });
 
   try {
-    const data = await prisma.user.create({ data: payload });
-
-    const response = {
-      data,
-      code: "201",
-    };
-    return new Response(JSON.stringify(response), {
-      status: 201,
-    });
+    const data = await prisma.user.create({ data: { user } });
+    return NextResponse.json({ data, code: "201" }, { status: 201 });
   } catch (error: any) {
-    if (error?.code === "P2002") {
-      const response = { code: "P2002", message: error.meta.target };
-      return new Response(JSON.stringify(response), {
-        status: 400,
-      });
-    }
+    if (error?.code === "P2002")
+      return NextResponse.json(
+        { code: "P2002", message: error.meta?.target },
+        { status: 400 }
+      );
+    return NextResponse.json(
+      { code: "ERROR", message: error?.message ?? "unknown" },
+      { status: 500 }
+    );
   }
 }

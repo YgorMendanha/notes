@@ -1,6 +1,6 @@
+import { geolocation } from "@vercel/functions";
 import { NextRequest, NextResponse } from "next/server";
 import countries from "@/utils/countries.json";
-import { geolocation } from "@vercel/edge";
 
 const i18n = {
   defaultLocale: "pt",

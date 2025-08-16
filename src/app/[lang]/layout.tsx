@@ -11,21 +11,23 @@ export const metadata: Metadata = {
   description: "Notes App",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  params: { lang: "en" | "pt" };
+  params: Promise<{ lang: "pt" | "en" }>;
 }) {
-  let lang: "pt-BR" | "en-US" = "pt-BR";
-  if (params.lang === "en") {
-    lang = "en-US";
-  } else if (params.lang === "pt") {
-    lang = "pt-BR";
+  const { lang } = await params;
+  let formatLang: "pt-BR" | "en-US" = "pt-BR";
+  if (lang === "en") {
+    formatLang = "en-US";
+  } else if (lang === "pt") {
+    formatLang = "pt-BR";
   }
+
   return (
-    <html lang={lang}>
+    <html lang={formatLang}>
       <body className={inter.className}>
         {children}
         <ToastContainer

@@ -7,7 +7,7 @@ import { BsFillTrash3Fill } from "react-icons/bs";
 import "moment/locale/pt-br";
 
 import { ImSpinner10 } from "react-icons/im";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { getDictionary } from "@/dictionary";
 
 export function CardPost({

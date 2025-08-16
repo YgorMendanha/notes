@@ -2,7 +2,7 @@ export async function featchApi<T = Response>(
   input: RequestInfo | URL,
   init?: RequestInit | undefined
 ) {
-  var url = "http://localhost:3000";
+  let url = "http://localhost:3000";
   if (
     process.env.NODE_ENV === "production" &&
     process.env.NEXT_PUBLIC_SITE_URL

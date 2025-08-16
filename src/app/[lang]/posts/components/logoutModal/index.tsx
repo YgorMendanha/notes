@@ -1,7 +1,7 @@
 import { getDictionary } from "@/dictionary";
 import { useLocalStorage } from "@/hooks/useLocalStorege";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ImSpinner10 } from "react-icons/im";
 
 export function LogoutModal() {
@@ -22,7 +22,7 @@ export function LogoutModal() {
 
   useEffect(() => {
     function handleResize(e: any) {
-      var container = document.getElementById("modal");
+      const container = document.getElementById("modal");
       if (!container?.contains(e.target)) {
         setOpen(false);
       }

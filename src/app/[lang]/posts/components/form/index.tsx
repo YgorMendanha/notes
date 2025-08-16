@@ -2,7 +2,6 @@ import { useLocalStorage } from "@/hooks/useLocalStorege";
 import { Post } from "@/server/post";
 import { useParams, useRouter } from "next/navigation";
 import { useRef, useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import { ImSpinner10 } from "react-icons/im";
 import { LogoutModal } from "../logoutModal";
 import { getDictionary } from "@/dictionary";
